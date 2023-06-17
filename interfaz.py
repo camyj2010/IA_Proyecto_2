@@ -4,6 +4,10 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from dropdown import DropDown
 
+# Minimax
+from minimax import *
+from utils import *
+
 pygame.init()
 
 # Constantes de juego
@@ -48,6 +52,15 @@ def play():
         pygame.font.SysFont(None, 30), 
         "Select level", ["Beginner", "Amateur","Expert"])
     
+    PLAYER1_POS, PLAYER2_POS, BOARD = init_game()
+    PLAYER1_SCORE = 0
+    PLAYER2_SCORE = 0
+
+    turn = 1
+
+    # Para verificar si el jugador hace click en el caballo
+    clicked = False
+    
     while True:
         
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
@@ -91,7 +104,55 @@ def play():
         draw_text(80, 320, "Level:", "White", 30, SCREEN)
         draw_text(1065, 200, "Points:", "White", 30, SCREEN)
 
+        #Puntajes
+        draw_text(215, 200, str(PLAYER1_SCORE), "White", 30, SCREEN)
+        draw_text(1165, 200, str(PLAYER2_SCORE), "White", 30, SCREEN)
+
+        # PINTA EL TABLERO
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                POS_I = i*CELL_WIDTH
+                POS_J = j*CELL_HEIGHT
+                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
+                if (i+j)%2 == 0:
+                    pygame.draw.rect(SCREEN, (240, 210, 185), rect) # Dibuja el cuadro blanco
+                else:
+                    pygame.draw.rect(SCREEN, (65, 60, 55), rect) # Dibuja el cuadro negro
+                
+                if (i,j) == PLAYER1_POS:
+                    SCREEN.blit(knight_W, (POS_I+345, POS_J+65))
+                elif (i,j) == PLAYER2_POS:
+                    SCREEN.blit(knight_B, (POS_I+345, POS_J+65))
+                
+                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
+
+
+        # PINTA LOS NUMEROS
+        for i, pos in enumerate(BOARD):
+            if pos != 0:
+                POS_I = BOARD[i][0] * CELL_WIDTH
+                POS_J = BOARD[i][1] * CELL_HEIGHT
+                draw_text(POS_I+375, POS_J+95, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+375, POS_J+99, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+379, POS_J+95, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+379, POS_J+99, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+377, POS_J+97, str(i+1), "White", 30, SCREEN)
+
+
+        # Todos los movimientos posibles para el J2
+        moves = get_all_moves(PLAYER2_POS)
+        # PINTA EL RECUADRO VERDE DE LOS POSIBLES MOVIMIENTOS
+        if clicked:
+            for move in moves:
+                POS_I = move[0]*CELL_WIDTH
+                POS_J = move[1]*CELL_HEIGHT
+                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
+                pygame.draw.rect(SCREEN, (0, 255, 0), rect, 5)
+
+
+        # EVENTOS
         event_list = pygame.event.get()
+        x, y = pygame.mouse.get_pos()
         for event in event_list:
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -107,36 +168,35 @@ def play():
                     if DROPDOWN_LEVEL.main == "Expert" and count==0:
                         print("Expert")
 
+                # Si el jugador hace click en el caballo
+                if PLAYER2_POS[0]*CELL_WIDTH+340 <= x <= PLAYER2_POS[0]*CELL_WIDTH+340+CELL_WIDTH and \
+                PLAYER2_POS[1]*CELL_HEIGHT+60 <= y <= PLAYER2_POS[1]*CELL_HEIGHT+60+CELL_HEIGHT:
+                    clicked = clicked ^ True
 
-        # DIBUJO DEL TABLERO
-        NUMBERS = [(2,3), (1,4), (7,5), (5,6), (1,3), (4,5), (6,4)]
-        POS_W = (0,0)
-        POS_B = (7,2)
+                # Si el jugador hace click en una casilla verde
+                if clicked:
+                    for move in moves:
+                        if move != 0:
+                            POS_I = move[0]*CELL_WIDTH+340
+                            POS_J = move[1]*CELL_HEIGHT+60
+                            if POS_I <= x <= POS_I+CELL_WIDTH and POS_J <= y <= POS_J+CELL_HEIGHT:
+                                # Se verifica si el movimiento da puntos
+                                index = check_move(BOARD, move)
+
+                                # ESTO TOCA CAMBIARLO LUEGO
+                                # ES SOLO DE PRUEBA
+                                if index != None:
+                                    PLAYER2_SCORE += index+1
+                                    BOARD[index] = 0
+                                PLAYER2_POS = move
+                                clicked = False
+                                turn = 1
+                                break
+
+
         
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                POS_I = i*CELL_WIDTH
-                POS_J = j*CELL_HEIGHT
-                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
-                if (i+j)%2 == 0:
-                    pygame.draw.rect(SCREEN, (240, 210, 185), rect) # Dibuja el cuadro blanco
-                else:
-                    pygame.draw.rect(SCREEN, (65, 60, 55), rect) # Dibuja el cuadro negro
-                
-                if (i,j) == POS_W:
-                    SCREEN.blit(knight_W, (POS_I+345, POS_J+65))
-                elif (i,j) == POS_B:
-                    SCREEN.blit(knight_B, (POS_I+345, POS_J+65))
-                
-                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
-
-        for i in range(len(NUMBERS)):
-            POS_I = NUMBERS[i][0] * CELL_WIDTH
-            POS_J = NUMBERS[i][1] * CELL_HEIGHT
-            draw_text(POS_I+377, POS_J+97, str(i+1), "Black", 30, SCREEN)
 
 
-        # Actualizar el dropdown del tipo de algoritmo 
         selected_alg = DROPDOWN_LEVEL.update(event_list)
         if selected_alg >= 0:
             count=0
