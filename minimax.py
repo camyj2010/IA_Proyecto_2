@@ -39,7 +39,7 @@ def minimax(game, depth):
     update_minimax_tree(root)
 
     # Pa debuggear xd
-    print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
+    # print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
     for child in root.children:
         print(
             child.type, 
@@ -69,7 +69,7 @@ def create_tree(node, depth):
     board_copy = node.game.board.copy()
 
     if node.type == 'max':  # Movimientos del jugador 1
-        moves = get_all_moves(node.game.player1_pos)    # Obtiene todos los movimientos posibles
+        moves = get_all_moves(node.game.player1_pos,node.game.player2_pos)    # Obtiene todos los movimientos posibles
         for move in moves:
             move_points = check_move(node.game.board, move)   # Verifica si el movimiento garantiza puntos
             # Si hay puntos
@@ -94,7 +94,7 @@ def create_tree(node, depth):
             create_tree(new_node, depth - 1)
 
     elif node.type == 'min': # Movimientos del jugador 2
-        moves = get_all_moves(node.game.player2_pos)    # Obtiene todos los movimientos posibles
+        moves = get_all_moves(node.game.player2_pos,node.game.player1_pos)    # Obtiene todos los movimientos posibles
         for move in moves:
             move_points = check_move(node.game.board, move)   # Verifica si el movimiento garantiza puntos
             # Si hay puntos
@@ -161,37 +161,48 @@ def check_move(board, move):
     return None
 
 
-def get_all_moves(position):
+def get_all_moves(position,position2):
     '''
     Retorna todos los posibles movimientos de un caballo en una posicion dada
     '''
     moves = []
     x = position[0]
     y = position[1]
+    #x2= position2[0]
+    #y2=position2[1]
 
-    if x - 1 >= 0 and x - 1 <= 7:
+
+    if x - 1 >= 0 and x - 1 <= 7 :
         if y - 2 >= 0 and y - 2 <= 7:
-            moves.append((x - 1, y - 2))
+            if position2!=(x-1,y-2):
+             moves.append((x - 1, y - 2))
         if y + 2 >= 0 and y + 2 <= 7:
-            moves.append((x - 1, y + 2))
+            if position2!=(x-1,y+2):
+             moves.append((x - 1, y + 2))
 
     if x + 1 >= 0 and x + 1 <= 7:
         if y - 2 >= 0 and y - 2 <= 7:
-            moves.append((x + 1, y - 2))
+             if position2!=(x+1,y-2):
+                moves.append((x + 1, y - 2))
         if y + 2 >= 0 and y + 2 <= 7:
-            moves.append((x + 1, y + 2))
+             if position2!=(x+1,y+2):
+                moves.append((x + 1, y + 2))
 
-    if x - 2 >= 0 and x - 2 <= 7:
+    if x - 2 >= 0 and x - 2 <= 7 :
         if y - 1 >= 0 and y - 1 <= 7:
-            moves.append((x - 2, y - 1))
+            if position2!=(x-2,y-1):
+                moves.append((x - 2, y - 1))
         if y + 1 >= 0 and y + 1 <= 7:
-            moves.append((x - 2, y + 1))
+             if position2!=(x-2,y+1):
+                moves.append((x - 2, y + 1))
 
-    if x + 2 >= 0 and x + 2 <= 7:
+    if x + 2 >= 0 and x + 2 <= 7 :
         if y - 1 >= 0 and y - 1 <= 7:
-            moves.append((x + 2, y - 1))
+             if position2!=(x+2,y-1):
+                moves.append((x + 2, y - 1))
         if y + 1 >= 0 and y + 1 <= 7:
-            moves.append((x + 2, y + 1))
+             if position2!=(x+2,y+1):
+                moves.append((x + 2, y + 1))
 
     return moves
 
