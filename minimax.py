@@ -1,4 +1,4 @@
-
+from copy import deepcopy
 
 class Game():
     def __init__(self, player1_pos, player2_pos, board, player1_score, player2_score):
@@ -10,16 +10,14 @@ class Game():
 
 
 class Node():
-
-    # El valor del nodo
     score = None
 
-    def __init__(self, game, type, depth=0, parent=None, children=[]):
-        self.game = game            # Objeto Game
-        self.parent = parent        # Nodo padre
-        self.type = type            # Tipo de nodo (max o min)
-        self.children = children    # Lista de nodos hijos
-        self.depth = depth          # Profundidad del nodo
+    def __init__(self, game, type, depth=0, parent=None, children=None):
+        self.game = game                                            # Objeto Game
+        self.parent = parent                                        # Nodo padre
+        self.type = type                                            # Tipo de nodo (max o min)
+        self.children = children if children is not None else []    # Lista de nodos hijos
+        self.depth = depth                                          # Profundidad del nodo
         if type == 'max':
             self.score = -100000
         elif type == 'min':
@@ -42,23 +40,27 @@ def minimax(game, depth):
 
     # Pa debuggear xd
     # print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
-    # for child in root.children:
-    #     print(
-    #         child.type, 
-    #         "-depth", child.depth,
-    #         "-j1:", 
-    #         child.game.player1_pos, 
-    #         child.game.player1_score,
-    #         "-j2:", 
-    #         child.game.player2_pos, 
-    #         child.game.player2_score,
-    #         '-node_score', child.score
-    #         )
+    for child in root.children:
+       
+        print(
+            child.type, 
+            "-depth", child.depth,
+            "-j1:", 
+            child.game.player1_pos, 
+            child.game.player1_score,
+            "-j2:", 
+            child.game.player2_pos, 
+            child.game.player2_score,
+            '-node_score', child.score
+            )
         
     for child in root.children:
        
         if child.score == root.score and child.depth==1:
+            print("POSICION INICIAL: ", root.game.player1_pos)
             print("Movimiento recomendado:", child.game.player1_pos)
+            print("Score:", child.score)
+            print("Profundidad:", child.depth)
             return child.game.player1_pos
 
 
@@ -69,16 +71,14 @@ def create_tree(node, depth):
     if depth == 0:
         return
 
-    board_copy = node.game.board.copy()
-
     if node.type == 'max':  # Movimientos del jugador 1
-        moves = get_all_moves(node.game.player1_pos,node.game.player2_pos)    # Obtiene todos los movimientos posibles
+        moves = get_all_moves(node.game.player1_pos, node.game.player2_pos)    # Obtiene todos los movimientos posibles
         for move in moves:
-            move_points = check_move(node.game.board, move)   # Verifica si el movimiento garantiza puntos
+            board_copy = deepcopy(node.game.board) # Copia profunda del tablero
+            move_points = check_move(board_copy, move)   # Verifica si el movimiento garantiza puntos
             # Si hay puntos
             if move_points is not None:
                 board_copy[move_points] = 0 # Elimina la casilla que da puntos
-                #del board_copy[move_points]
                 new_game = Game(move, 
                                 node.game.player2_pos, 
                                 board_copy, 
@@ -98,13 +98,13 @@ def create_tree(node, depth):
             create_tree(new_node, depth - 1)
 
     elif node.type == 'min': # Movimientos del jugador 2
-        moves = get_all_moves(node.game.player2_pos,node.game.player1_pos)    # Obtiene todos los movimientos posibles
+        moves = get_all_moves(node.game.player2_pos, node.game.player1_pos)    # Obtiene todos los movimientos posibles
         for move in moves:
-            move_points = check_move(node.game.board, move)   # Verifica si el movimiento garantiza puntos
+            board_copy = deepcopy(node.game.board) # Copia profunda del tablero
+            move_points = check_move(board_copy, move)   # Verifica si el movimiento garantiza puntos
             # Si hay puntos
             if move_points:
                 board_copy[move_points] = 0 # Elimina la casilla que da puntos
-                #del board_copy[move_points]
                 new_game = Game(node.game.player1_pos, 
                                 move, 
                                 board_copy, 
@@ -124,13 +124,28 @@ def create_tree(node, depth):
             create_tree(new_node, depth - 1)
 
 
+def tree_to_list(node):
+    '''
+    Convierte el arbol de minimax en una lista
+    '''
+    tree_list = []
+
+    for child in node.children:
+        tree_list.append(child)
+        tree_list += tree_to_list(child)
+
+    return tree_list
+
+
 def update_minimax_tree(node):
     '''
     Actualiza el arbol de minimax con los puntajes
     de cada nodo
     '''
+    children = tree_to_list(node)
+
     max_depth = 0
-    for child in node.children:
+    for child in children:
         if child.depth > max_depth:
             max_depth = child.depth
 
@@ -138,11 +153,11 @@ def update_minimax_tree(node):
     # (En este punto no se como incluir la parte que dijo 
     # el profe de que una casilla con puntos que se consigue 
     # antes vale mas que tomarla despues)
-    for child in node.children:
+    for child in children:
         child.score = child.game.player1_score - child.game.player2_score
     
     while max_depth > 0:
-        for child in node.children:
+        for child in children:
             if child.depth == max_depth:
                 if child.parent.type == 'max':
                     child.parent.score = max(child.parent.score, child.score)

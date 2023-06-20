@@ -66,9 +66,8 @@ def play():
     clicked = False
     
     count = -1
-    countp1=1
-    depth=0
-    oldposition=PLAYER1_POS
+    countp1 = 1
+    depth = 0
 
     while True:
         
