@@ -1,7 +1,7 @@
 
 
 class Game():
-    def __init__(self, player1_pos, player2_pos, board, player1_score=0, player2_score=0):
+    def __init__(self, player1_pos, player2_pos, board, player1_score, player2_score):
         self.board = board                      # Lista de casillas que dan puntos
         self.player1_pos = player1_pos          # Posicion del jugador 1
         self.player2_pos = player2_pos          # Posicion del jugador 2
@@ -37,24 +37,27 @@ def minimax(game, depth):
     root = Node(game, 'max')
     create_tree(root, depth)
     update_minimax_tree(root)
+    print (root)
+
 
     # Pa debuggear xd
     # print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
-    for child in root.children:
-        print(
-            child.type, 
-            "-depth", child.depth,
-            "-j1:", 
-            child.game.player1_pos, 
-            child.game.player1_score,
-            "-j2:", 
-            child.game.player2_pos, 
-            child.game.player2_score,
-            '-node_score', child.score
-            )
+    # for child in root.children:
+    #     print(
+    #         child.type, 
+    #         "-depth", child.depth,
+    #         "-j1:", 
+    #         child.game.player1_pos, 
+    #         child.game.player1_score,
+    #         "-j2:", 
+    #         child.game.player2_pos, 
+    #         child.game.player2_score,
+    #         '-node_score', child.score
+    #         )
         
     for child in root.children:
-        if child.score == root.score:
+       
+        if child.score == root.score and child.depth==1:
             print("Movimiento recomendado:", child.game.player1_pos)
             return child.game.player1_pos
 
@@ -75,6 +78,7 @@ def create_tree(node, depth):
             # Si hay puntos
             if move_points is not None:
                 board_copy[move_points] = 0 # Elimina la casilla que da puntos
+                #del board_copy[move_points]
                 new_game = Game(move, 
                                 node.game.player2_pos, 
                                 board_copy, 
@@ -100,6 +104,7 @@ def create_tree(node, depth):
             # Si hay puntos
             if move_points:
                 board_copy[move_points] = 0 # Elimina la casilla que da puntos
+                #del board_copy[move_points]
                 new_game = Game(node.game.player1_pos, 
                                 move, 
                                 board_copy, 

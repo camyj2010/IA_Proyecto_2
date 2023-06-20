@@ -118,60 +118,7 @@ def play():
         draw_text(1165, 200, str(PLAYER2_SCORE), "White", 30, SCREEN)
         
 
-        # PINTA EL TABLERO
-        for i in range(BOARD_SIZE):
-            for j in range(BOARD_SIZE):
-                POS_I = i*CELL_WIDTH
-                POS_J = j*CELL_HEIGHT
-                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
-                if (i+j)%2 == 0:
-                    pygame.draw.rect(SCREEN, (240, 210, 185), rect) # Dibuja el cuadro blanco
-                else:
-                    pygame.draw.rect(SCREEN, (65, 60, 55), rect) # Dibuja el cuadro negro
-                
-                if (i,j) == PLAYER1_POS:
-                    SCREEN.blit(knight_W, (POS_I+345, POS_J+65))
-                elif (i,j) == PLAYER2_POS:
-                    SCREEN.blit(knight_B, (POS_I+345, POS_J+65))
-                
-                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
-
-
-        # PINTA LOS NUMEROS
-        for i, pos in enumerate(BOARD):
-            if pos != 0:
-                POS_I = BOARD[i][0] * CELL_WIDTH
-                POS_J = BOARD[i][1] * CELL_HEIGHT
-                draw_text(POS_I+375, POS_J+95, str(i+1), "Black", 30, SCREEN)
-                draw_text(POS_I+375, POS_J+99, str(i+1), "Black", 30, SCREEN)
-                draw_text(POS_I+379, POS_J+95, str(i+1), "Black", 30, SCREEN)
-                draw_text(POS_I+379, POS_J+99, str(i+1), "Black", 30, SCREEN)
-                draw_text(POS_I+377, POS_J+97, str(i+1), "White", 30, SCREEN)
-
-        if count==0 and depth!=0:
-            gameminimax=Game(PLAYER1_POS,PLAYER2_POS,BOARD)
-            PLAYER1_POS=minimax(gameminimax,depth)
-            index = check_move(BOARD, PLAYER1_POS)
-            if index != None:
-                        PLAYER1_SCORE += index+1
-                        BOARD[index] = 0
-
-            #oldposition=PLAYER2_POS
-            count = 1
-
-         # Todos los movimientos posibles para el J2
-        if count == 1:    
-            moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
-            # PINTA EL RECUADRO VERDE DE LOS POSIBLES MOVIMIENTOS
-            if clicked:
-                for move in moves:
-                    POS_I = move[0]*CELL_WIDTH
-                    POS_J = move[1]*CELL_HEIGHT
-                    rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
-                    pygame.draw.rect(SCREEN, (0, 255, 0), rect, 5)
-
-                countp1=0
-
+        
             
 
         # EVENTOS
@@ -222,9 +169,11 @@ def play():
                                 # ES SOLO DE PRUEBA
                                 if index != None:
                                     PLAYER2_SCORE += index+1
+                                    #del BOARD[index]
                                     BOARD[index] = 0
 
                                 PLAYER2_POS = move
+                                # pygame.display.update()
                                 print(BOARD)
                                 print (PLAYER2_POS)
                                 clicked = False
@@ -234,14 +183,71 @@ def play():
 
                                 
                                 break
-                    
+                    # pygame.display.flip()
                     countp1=1
                     if countp1==1 and depth!=0:
                         countp1=2
                         count = 2
 
+        # PINTA EL TABLERO
+        for i in range(BOARD_SIZE):
+            for j in range(BOARD_SIZE):
+                POS_I = i*CELL_WIDTH
+                POS_J = j*CELL_HEIGHT
+                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
+                if (i+j)%2 == 0:
+                    pygame.draw.rect(SCREEN, (240, 210, 185), rect) # Dibuja el cuadro blanco
+                else:
+                    pygame.draw.rect(SCREEN, (65, 60, 55), rect) # Dibuja el cuadro negro
+                
+                if (i,j) == PLAYER1_POS:
+                    SCREEN.blit(knight_W, (POS_I+345, POS_J+65))
+                elif (i,j) == PLAYER2_POS:
+                    SCREEN.blit(knight_B, (POS_I+345, POS_J+65))
+                
+                pygame.draw.rect(SCREEN, (0, 0, 0), rect, 1) # Dibuja el borde negro
+
+
+        # PINTA LOS NUMEROS
+        for i, pos in enumerate(BOARD):
+            if pos != 0:
+                POS_I = BOARD[i][0] * CELL_WIDTH
+                POS_J = BOARD[i][1] * CELL_HEIGHT
+                draw_text(POS_I+375, POS_J+95, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+375, POS_J+99, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+379, POS_J+95, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+379, POS_J+99, str(i+1), "Black", 30, SCREEN)
+                draw_text(POS_I+377, POS_J+97, str(i+1), "White", 30, SCREEN)
+
         
 
+        if count==0 and depth!=0:
+            gameminimax=Game(PLAYER1_POS,PLAYER2_POS,BOARD,PLAYER1_SCORE,PLAYER2_SCORE)
+            print(PLAYER1_POS)
+            print(PLAYER2_POS)
+            print(BOARD)
+            PLAYER1_POS=minimax(gameminimax,depth)
+            index = check_move(BOARD, PLAYER1_POS)
+            if index != None:
+                        PLAYER1_SCORE += index+1
+                        BOARD[index] = 0
+                        #del BOARD[index]
+
+            #oldposition=PLAYER2_POS
+            count = 1
+
+         # Todos los movimientos posibles para el J2
+        if count == 1:    
+            moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
+            # PINTA EL RECUADRO VERDE DE LOS POSIBLES MOVIMIENTOS
+            if clicked:
+                for move in moves:
+                    POS_I = move[0]*CELL_WIDTH
+                    POS_J = move[1]*CELL_HEIGHT
+                    rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
+                    pygame.draw.rect(SCREEN, (0, 255, 0), rect, 5)
+
+                countp1=0
 
         selected_alg = DROPDOWN_LEVEL.update(event_list)
         if selected_alg >= 0:
