@@ -35,32 +35,32 @@ def minimax(game, depth):
     root = Node(game, 'max')
     create_tree(root, depth)
     update_minimax_tree(root)
-    print (root)
+    # print (root)
 
 
     # Pa debuggear xd
     # print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
-    for child in root.children:
+    # for child in root.children:
        
-        print(
-            child.type, 
-            "-depth", child.depth,
-            "-j1:", 
-            child.game.player1_pos, 
-            child.game.player1_score,
-            "-j2:", 
-            child.game.player2_pos, 
-            child.game.player2_score,
-            '-node_score', child.score
-            )
+    #     print(
+    #         child.type, 
+    #         "-depth", child.depth,
+    #         "-j1:", 
+    #         child.game.player1_pos, 
+    #         child.game.player1_score,
+    #         "-j2:", 
+    #         child.game.player2_pos, 
+    #         child.game.player2_score,
+    #         '-node_score', child.score
+    #         )
         
     for child in root.children:
        
         if child.score == root.score and child.depth==1:
-            print("POSICION INICIAL: ", root.game.player1_pos)
-            print("Movimiento recomendado:", child.game.player1_pos)
-            print("Score:", child.score)
-            print("Profundidad:", child.depth)
+            # print("POSICION INICIAL: ", root.game.player1_pos)
+            # print("Movimiento recomendado:", child.game.player1_pos)
+            # print("Score:", child.score)
+            # print("Profundidad:", child.depth)
             return child.game.player1_pos
 
 
@@ -82,7 +82,7 @@ def create_tree(node, depth):
                 new_game = Game(move, 
                                 node.game.player2_pos, 
                                 board_copy, 
-                                node.game.player1_score + move_points + 1, 
+                                node.game.player1_score + scale_points(move_points+1, node.depth+1), 
                                 node.game.player2_score
                                 )
             # Si no hay puntos
@@ -109,7 +109,7 @@ def create_tree(node, depth):
                                 move, 
                                 board_copy, 
                                 node.game.player1_score, 
-                                node.game.player2_score + move_points + 1
+                                node.game.player2_score + scale_points(move_points+1, node.depth+1)
                                 )
             # Si no hay puntos
             else:
@@ -137,6 +137,83 @@ def tree_to_list(node):
     return tree_list
 
 
+def scale_points(points, depth):
+    '''
+    Escala la cantidad de puntos obtenidos segun la profundidad del nodo
+    '''
+    if depth==0:
+        return points * 0
+    if depth==1:
+        return points * 1
+    if depth==2:
+        return points * 0.7
+    if depth==3:
+        return points * 0.4
+    if depth==4:
+        return points * 0.2
+    if depth==5:
+        return points * 0.05
+    if depth==6:
+        return points * 0.01
+    return points
+
+
+def manhattan_distance(position1, position2):
+    '''
+    Calcula la distancia de manhattan entre dos puntos
+    '''
+    return abs(position1[0] - position2[0]) + abs(position1[1] - position2[1])
+
+
+def utility_function(player1_pos, player2_pos, board):
+    player1_color = player1_pos[0] + player1_pos[1]
+    player2_color = player2_pos[0] + player2_pos[1]
+
+    #Distancia de cada punto al jugador 1
+    player1_distances = []
+    for position in board:
+        if position != 0:
+            player1_distances.append(manhattan_distance(position, player1_pos))
+        else:
+            player1_distances.append(0)
+
+    #Distancia de cada punto al jugador 2
+    player2_distances = []
+    for position in board:
+        if position != 0:
+            player2_distances.append(manhattan_distance(position, player2_pos))
+        else:
+            player2_distances.append(0)
+    
+
+    #Cantidad de movimientos maxima que se debe hacer el jugador
+    # para llegar a un punto dependiendo de su distancia
+    distance_scaler = {
+        0: 1,
+        1: 3,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 3,
+        6: 4,
+        7: 5,
+        8: 4,
+        9: 5,
+        10: 4,
+        11: 5,
+        12: 4,
+        13: 5,
+        14: 6
+    }
+    #Valor del punto divido la distancia del punto al jugador (Se hace para cada punto)
+    
+    player1_value = sum([(i+1) / distance_scaler[distance] if distance != 0 else 0 for i, distance in enumerate(player1_distances)])
+    player2_value = sum([(i+1) / distance_scaler[distance] if distance != 0 else 0 for i, distance in enumerate(player2_distances)])
+
+    return player1_value - player2_value
+    
+
+
 def update_minimax_tree(node):
     '''
     Actualiza el arbol de minimax con los puntajes
@@ -154,7 +231,7 @@ def update_minimax_tree(node):
     # el profe de que una casilla con puntos que se consigue 
     # antes vale mas que tomarla despues)
     for child in children:
-        child.score = child.game.player1_score - child.game.player2_score
+        child.score = child.game.player1_score - child.game.player2_score + utility_function(child.game.player1_pos, child.game.player2_pos, child.game.board)
     
     while max_depth > 0:
         for child in children:

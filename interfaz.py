@@ -60,14 +60,15 @@ def play():
     PLAYER1_SCORE = 0
     PLAYER2_SCORE = 0
 
-    turn = 1
+    turn = 2
 
     # Para verificar si el jugador hace click en el caballo
     clicked = False
     
     count = -1
-    countp1 = 1
-    depth = 0
+    countp1=1
+    depth=0
+    oldposition=PLAYER1_POS
 
     while True:
         
@@ -130,6 +131,8 @@ def play():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BACK.checkForInput(PLAY_MOUSE_POS):
                     main_menu()
+                if RESTART_BUTTON.checkForInput(PLAY_MOUSE_POS):
+                    PLAYER1_POS, PLAYER2_POS, BOARD = init_game()
                 if PLAY_BUTTON.checkForInput(PLAY_MOUSE_POS):
                 
                     if DROPDOWN_LEVEL.main == "Beginner" :
@@ -150,15 +153,15 @@ def play():
                     clicked = clicked ^ True
 
                 # Si el jugador hace click en una casilla verde
-                if clicked and countp1==0:
-                
+                if clicked and turn == 1:
+                    moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
                     for move in moves:
                         if move != 0:
                             POS_I = move[0]*CELL_WIDTH+340
                             POS_J = move[1]*CELL_HEIGHT+60
 
-                            print(PLAYER2_POS)
-                            print(PLAYER1_POS)
+                            # print(PLAYER2_POS)
+                            # print(PLAYER1_POS)
                             if POS_I <= x <= POS_I+CELL_WIDTH and POS_J <= y <= POS_J+CELL_HEIGHT :
                                 # Se verifica si el movimiento da puntos
                                 index = check_move(BOARD, move)
@@ -173,20 +176,16 @@ def play():
 
                                 PLAYER2_POS = move
                                 # pygame.display.update()
-                                print(BOARD)
-                                print (PLAYER2_POS)
+                                # print(BOARD)
+                                # print (PLAYER2_POS)
                                 clicked = False
                                 
-                                turn = 1
-                                # time.sleep(10)
-
+                                turn = 2
                                 
+
                                 break
                     # pygame.display.flip()
-                    countp1=1
-                    if countp1==1 and depth!=0:
-                        countp1=2
-                        count = 2
+                    
 
         # PINTA EL TABLERO
         for i in range(BOARD_SIZE):
@@ -220,33 +219,31 @@ def play():
 
         
 
-        if count==0 and depth!=0:
+        if turn == 2 and depth!=0:
             gameminimax=Game(PLAYER1_POS,PLAYER2_POS,BOARD,PLAYER1_SCORE,PLAYER2_SCORE)
-            print(PLAYER1_POS)
-            print(PLAYER2_POS)
-            print(BOARD)
+            # print(PLAYER1_POS)
+            # print(PLAYER2_POS)
+            # print(BOARD)
             PLAYER1_POS=minimax(gameminimax,depth)
             index = check_move(BOARD, PLAYER1_POS)
             if index != None:
-                        PLAYER1_SCORE += index+1
-                        BOARD[index] = 0
-                        #del BOARD[index]
+                PLAYER1_SCORE += index+1
+                BOARD[index] = 0
+                #del BOARD[index]
 
             #oldposition=PLAYER2_POS
-            count = 1
+            turn = 3
 
          # Todos los movimientos posibles para el J2
-        if count == 1:    
+        if turn == 1 and clicked:    
             moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
             # PINTA EL RECUADRO VERDE DE LOS POSIBLES MOVIMIENTOS
-            if clicked:
-                for move in moves:
-                    POS_I = move[0]*CELL_WIDTH
-                    POS_J = move[1]*CELL_HEIGHT
-                    rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
-                    pygame.draw.rect(SCREEN, (0, 255, 0), rect, 5)
+            for move in moves:
+                POS_I = move[0]*CELL_WIDTH
+                POS_J = move[1]*CELL_HEIGHT
+                rect = pygame.Rect(POS_I+340, POS_J+60, CELL_WIDTH, CELL_HEIGHT)
+                pygame.draw.rect(SCREEN, (0, 255, 0), rect, 5)
 
-                countp1=0
 
         selected_alg = DROPDOWN_LEVEL.update(event_list)
         if selected_alg >= 0:
@@ -257,9 +254,8 @@ def play():
 
         pygame.display.update()
         
-        if countp1==2 and depth!=0:
-            countp1=1
-            count = 0
+        if turn == 3:
+            turn = 1
     
 #Funcion de la pestaña de creditos
 def credits():
