@@ -279,6 +279,8 @@ def play():
                 BOARD_TEXT = "Player 1 wins!"
             elif PLAYER1_SCORE < PLAYER2_SCORE:
                 BOARD_TEXT = "Player 2 wins!"
+            else:
+                BOARD_TEXT = "It's a tie!"
 
         #Texto fin del juego
         draw_text(652, 352, BOARD_TEXT, "Black", 120, SCREEN)
