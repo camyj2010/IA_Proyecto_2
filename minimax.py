@@ -40,7 +40,8 @@ def minimax(game, depth):
 
     # Pa debuggear xd
     # print("Root: ", root.game.player1_pos, root.game.player2_pos, root.type, "-depth", root.depth, '-node_score', root.score)
-    # for child in root.children:
+    # children = tree_to_list(root)
+    # for child in children:
        
     #     print(
     #         child.type, 
@@ -173,7 +174,15 @@ def utility_function(player1_pos, player2_pos, board):
     player1_distances = []
     for position in board:
         if position != 0:
-            player1_distances.append(manhattan_distance(position, player1_pos))
+            manhattan = manhattan_distance(position, player1_pos)
+            if manhattan == 3:
+                moves = get_all_moves(player1_pos, player2_pos)
+                if position in moves:
+                    player1_distances.append(-1)
+                else:
+                    player1_distances.append(manhattan)
+            else:
+                player1_distances.append(manhattan)
         else:
             player1_distances.append(0)
 
@@ -181,7 +190,15 @@ def utility_function(player1_pos, player2_pos, board):
     player2_distances = []
     for position in board:
         if position != 0:
-            player2_distances.append(manhattan_distance(position, player2_pos))
+            manhattan = manhattan_distance(position, player2_pos)
+            if manhattan == 3:
+                moves = get_all_moves(player2_pos, player1_pos)
+                if position in moves:
+                    player2_distances.append(-1)
+                else:
+                    player2_distances.append(manhattan)
+            else:
+                player2_distances.append(manhattan)
         else:
             player2_distances.append(0)
     
@@ -189,6 +206,7 @@ def utility_function(player1_pos, player2_pos, board):
     #Cantidad de movimientos maxima que se debe hacer el jugador
     # para llegar a un punto dependiendo de su distancia
     distance_scaler = {
+        -1: 1,
         0: 1,
         1: 3,
         2: 2,
@@ -220,7 +238,7 @@ def update_minimax_tree(node):
     de cada nodo
     '''
     children = tree_to_list(node)
-
+        
     max_depth = 0
     for child in children:
         if child.depth > max_depth:
@@ -232,7 +250,7 @@ def update_minimax_tree(node):
     # antes vale mas que tomarla despues)
     for child in children:
         child.score = child.game.player1_score - child.game.player2_score + utility_function(child.game.player1_pos, child.game.player2_pos, child.game.board)
-    
+        #print('nodo', child.game.player1_pos, child.game.player2_pos, child.score, child.depth)
     while max_depth > 0:
         for child in children:
             if child.depth == max_depth:
@@ -307,6 +325,6 @@ def get_all_moves(position,position2):
 
 if __name__ == '__main__':
     # Juego inicial
-    game = Game((0, 0), (7, 7), [(1, 2), (4, 3), (4, 7), (4, 1), (6, 5), (5, 6), (2, 1)])
+    game = Game((3, 4), (4, 2), [0, 0, (5, 7), 0, 0, 0, 0], 0, 0)
     # Prueba minimax prof 2
     minimax(game, 2)

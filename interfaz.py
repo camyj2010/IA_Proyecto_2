@@ -20,9 +20,9 @@ CELL_HEIGHT = 75
 SCREEN = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Menu")
 
-BG = pygame.transform.scale(pygame.image.load("images/chees.jpg"),(int(1280), int(720)))
-knight_W=pygame.transform.scale(pygame.image.load("images/strategy_white.png"), (int(CELL_WIDTH-10), int(CELL_HEIGHT-10)))
-knight_B=pygame.transform.scale(pygame.image.load("images/strategy_black.png"), (int(CELL_WIDTH-10), int(CELL_HEIGHT-10)))
+BG = pygame.transform.scale(pygame.image.load("images/chees.jpg").convert_alpha(),(int(1280), int(720)))
+knight_W=pygame.transform.scale(pygame.image.load("images/strategy_white.png").convert_alpha(), (int(CELL_WIDTH-10), int(CELL_HEIGHT-10)))
+knight_B=pygame.transform.scale(pygame.image.load("images/strategy_black.png").convert_alpha(), (int(CELL_WIDTH-10), int(CELL_HEIGHT-10)))
 
 
 
@@ -55,39 +55,47 @@ def play():
     
    
     PLAYER1_POS, PLAYER2_POS, BOARD = init_game()
+    # game = Game((3, 4), (4, 2), [0, 0, (5, 7), 0, 0, 0, 0])
+    # PLAYER1_POS = (4,6)
+    # PLAYER2_POS = (5,4)
+    # BOARD = [0, 0, (5, 7), 0, 0, 0, 0]
     #print(PLAYER1_POS)
     #print(PLAYER1_POS[1])
     PLAYER1_SCORE = 0
     PLAYER2_SCORE = 0
 
-    turn = 2
+    BOARD_TEXT = ""
+
+    # Turno del jugador
+    # 1 = J1
+    # 2 = J2
+    # 3 = transitorio
+    # 4 = transitorio
+    turn = 1
 
     # Para verificar si el jugador hace click en el caballo
     clicked = False
-    
-    count = -1
-    countp1=1
     depth=0
-    oldposition=PLAYER1_POS
+    playing = False
 
     while True:
         
         PLAY_MOUSE_POS = pygame.mouse.get_pos()
-        PLAY_BG= pygame.transform.scale(pygame.image.load("images/background.jpg"),(int(1280), int(720)))
+        PLAY_BG= pygame.transform.scale(pygame.image.load("images/background.jpg").convert_alpha(),(int(1280), int(720)))
         SCREEN.blit(PLAY_BG, (0, 0)) 
 
 
-        PLAY_BACK = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png"),(int(250), int(125))), pos=(1100, 600), 
+        PLAY_BACK = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png").convert_alpha(),(int(250), int(125))), pos=(1100, 600), 
                             text_input="BACK", font=get_font(40), base_color="#FFFFFF", hovering_color="#87CEEB")
 
         PLAY_BACK.changeColor( PLAY_MOUSE_POS)
         PLAY_BACK.update(SCREEN)
-        PLAY_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect3.png"),(int(200), int(70))), pos=(150, 450), 
+        PLAY_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect3.png").convert_alpha(),(int(200), int(70))), pos=(150, 450), 
                             text_input="PLAY", font=get_font(30), base_color="#FFFFFF", hovering_color="#555555")
 
         PLAY_BUTTON.changeColor( PLAY_MOUSE_POS)
         PLAY_BUTTON.update(SCREEN)
-        RESTART_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect3.png"),(int(200), int(70))), pos=(150, 520), 
+        RESTART_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect3.png").convert_alpha(),(int(200), int(70))), pos=(150, 520), 
                             text_input="RESTART", font=get_font(30), base_color="#FFFFFF", hovering_color="#555555")
 
         RESTART_BUTTON.changeColor( PLAY_MOUSE_POS)
@@ -118,7 +126,6 @@ def play():
         draw_text(1165, 200, str(PLAYER2_SCORE), "White", 30, SCREEN)
         
 
-        
             
 
         # EVENTOS
@@ -133,19 +140,30 @@ def play():
                     main_menu()
                 if RESTART_BUTTON.checkForInput(PLAY_MOUSE_POS):
                     PLAYER1_POS, PLAYER2_POS, BOARD = init_game()
+                    PLAYER1_SCORE = 0
+                    PLAYER2_SCORE = 0
+                    BOARD_TEXT = ""
+                    clicked = False
+                    turn = 1
+                    playing = False
+
                 if PLAY_BUTTON.checkForInput(PLAY_MOUSE_POS):
                 
                     if DROPDOWN_LEVEL.main == "Beginner" :
                         print("Beginner")
                         depth=2
+                        playing = True
 
                     if DROPDOWN_LEVEL.main == "Amateur" :
                         print("Amateur")
                         depth=4
+                        playing = True
+
                     if DROPDOWN_LEVEL.main == "Expert" :
                         print("Expert")
                         depth=6
-                    count=0
+                        playing = True
+                    
 
                 # Si el jugador hace click en el caballo
                 if PLAYER2_POS[0]*CELL_WIDTH+340 <= x <= PLAYER2_POS[0]*CELL_WIDTH+340+CELL_WIDTH and \
@@ -153,9 +171,10 @@ def play():
                     clicked = clicked ^ True
 
                 # Si el jugador hace click en una casilla verde
-                if clicked and turn == 1:
+                if clicked and turn == 2:
                     moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
                     for move in moves:
+                        
                         if move != 0:
                             POS_I = move[0]*CELL_WIDTH+340
                             POS_J = move[1]*CELL_HEIGHT+60
@@ -180,8 +199,8 @@ def play():
                                 # print (PLAYER2_POS)
                                 clicked = False
                                 
-                                turn = 2
-                                
+                                turn = 4
+                                # time.sleep(10)
 
                                 break
                     # pygame.display.flip()
@@ -219,7 +238,7 @@ def play():
 
         
 
-        if turn == 2 and depth!=0:
+        if turn == 1 and playing:
             gameminimax=Game(PLAYER1_POS,PLAYER2_POS,BOARD,PLAYER1_SCORE,PLAYER2_SCORE)
             # print(PLAYER1_POS)
             # print(PLAYER2_POS)
@@ -235,7 +254,7 @@ def play():
             turn = 3
 
          # Todos los movimientos posibles para el J2
-        if turn == 1 and clicked:    
+        if turn == 2 and clicked:    
             moves = get_all_moves(PLAYER2_POS, PLAYER1_POS)
             # PINTA EL RECUADRO VERDE DE LOS POSIBLES MOVIMIENTOS
             for move in moves:
@@ -252,11 +271,33 @@ def play():
         event_list = pygame.event.get()
 
 
-        pygame.display.update()
+
         
+        if BOARD == [0, 0, 0, 0, 0, 0, 0] and turn != 1 and turn != 2:
+            turn = 5
+            if PLAYER1_SCORE > PLAYER2_SCORE:
+                BOARD_TEXT = "Player 1 wins!"
+            elif PLAYER1_SCORE < PLAYER2_SCORE:
+                BOARD_TEXT = "Player 2 wins!"
+
+        #Texto fin del juego
+        draw_text(652, 352, BOARD_TEXT, "Black", 120, SCREEN)
+        draw_text(652, 348, BOARD_TEXT, "Black", 120, SCREEN)
+        draw_text(648, 352, BOARD_TEXT, "Black", 120, SCREEN)
+        draw_text(648, 348, BOARD_TEXT, "Black", 120, SCREEN)
+        draw_text(650, 350, BOARD_TEXT, "White", 120, SCREEN)
+
+
+        pygame.display.update()
+
         if turn == 3:
+            turn = 2
+        elif turn == 4:
             turn = 1
+
+
     
+
 #Funcion de la pestaña de creditos
 def credits():
     # sound.stop()
@@ -291,7 +332,7 @@ def credits():
         draw_text(640, 460, "Juan Esteban Betancourt Narvaez", "Black", 40, SCREEN)
 
 
-        OPTIONS_BACK = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png"),(int(250), int(125))), pos=(900, 600), 
+        OPTIONS_BACK = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png").convert_alpha(),(int(250), int(125))), pos=(900, 600), 
                             text_input="BACK", font=get_font(40), base_color="#FFFFFF", hovering_color="#87CEEB")
 
         OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
@@ -326,10 +367,10 @@ def main_menu():
         
         #Botones de las pantallas 
         
-        PLAY_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png"),(int(250), int(125))), pos=(400, 600), 
+        PLAY_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png").convert_alpha(),(int(250), int(125))), pos=(400, 600), 
                             text_input="PLAY", font=get_font(40), base_color="#FFFFFF", hovering_color="#87CEEB")
         
-        CREDIT_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png"),(int(250), int(125))), pos=(900, 600), 
+        CREDIT_BUTTON = Button(image=pygame.transform.scale(pygame.image.load("images/Play_rect.png").convert_alpha(),(int(250), int(125))), pos=(900, 600), 
                             text_input="CREDITS", font=get_font(40), base_color="#FFFFFF", hovering_color="#87CEEB")
         
         
