@@ -145,17 +145,17 @@ def scale_points(points, depth):
     if depth==0:
         return points * 0
     if depth==1:
-        return points * 1
+        return points
     if depth==2:
-        return points * 0.7
+        return points
     if depth==3:
-        return points * 0.4
+        return points * 0.7
     if depth==4:
-        return points * 0.2
+        return points * 0.7
     if depth==5:
-        return points * 0.05
+        return points * 0.4
     if depth==6:
-        return points * 0.01
+        return points * 0.4
     return points
 
 
@@ -181,6 +181,12 @@ def utility_function(player1_pos, player2_pos, board):
                     player1_distances.append(-1)
                 else:
                     player1_distances.append(manhattan)
+            # El caballo esta en una esquina
+            elif player1_pos == (0, 0) or player1_pos == (7, 0) or player1_pos == (0, 7) or player1_pos == (7, 7):
+                if manhattan == 2:
+                    player1_distances.append(4)
+                else:
+                    player1_distances.append(manhattan)
             else:
                 player1_distances.append(manhattan)
         else:
@@ -195,6 +201,12 @@ def utility_function(player1_pos, player2_pos, board):
                 moves = get_all_moves(player2_pos, player1_pos)
                 if position in moves:
                     player2_distances.append(-1)
+                else:
+                    player2_distances.append(manhattan)
+            # El caballo esta en una esquina
+            elif player2_pos == (0, 0) or player2_pos == (7, 0) or player2_pos == (0, 7) or player2_pos == (7, 7):
+                if manhattan == 2:
+                    player2_distances.append(4)
                 else:
                     player2_distances.append(manhattan)
             else:
